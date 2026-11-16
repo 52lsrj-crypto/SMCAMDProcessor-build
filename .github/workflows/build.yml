@@ -1,0 +1,32 @@
+name: build-kexts
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+jobs:
+  build:
+    runs-on: macos-13
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Show toolchain
+        run: xcodebuild -version && sw_vers
+      - name: Build
+        run: |
+          chmod +x Scripts/build.sh
+          ./Scripts/build.sh --verbose
+      - name: Verify artifacts
+        run: |
+          unzip -l build/Release.zip
+          for k in AMDRyzenCPUPowerManagement SMCAMDProcessor; do
+            v=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "build/Release/$k.kext/Contents/Info.plist")
+            a=$(lipo -archs "build/Release/$k.kext/Contents/MacOS/$k")
+            echo "$k version=$v arch=$a"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SMCAMDProcessor-kexts
+          path: build/Release.zip
+          retention-days: 14

@@ -234,10 +234,12 @@ build_scheme() {
     if [ "$VERBOSE" -eq 1 ]; then
         xcodebuild -scheme "$scheme" -jobs 1 "${ARCH_ARGS[@]}" \
             -configuration "$CONFIGURATION" -derivedDataPath "$DERIVED_DATA" \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
             2>&1 | tee "$LOG_FILE"
     else
         if ! xcodebuild -scheme "$scheme" -jobs 1 "${ARCH_ARGS[@]}" \
                 -configuration "$CONFIGURATION" -derivedDataPath "$DERIVED_DATA" \
+                CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
                 >"$LOG_FILE" 2>&1; then
             printf '\033[1;31m[error]\033[0m %s 构建失败,日志尾部:\n' "$scheme" >&2
             tail -n 60 "$LOG_FILE" >&2
